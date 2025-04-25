@@ -84,7 +84,7 @@
                 header("Location: https://auth.flake-systems.de/login.php?redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
             } else {
                 if ($authTools->callUserDetailsApi($_COOKIE['user_id'], $_COOKIE['auth_token']) == ["error" => "Request failed"]) {
-                    header("Location: https://auth.flake-systems.de/login.php?redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
+                    header("Location: https://auth.flake-systems.de/login.php?disable_redirect=true&redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
                 }
             }
         }
