@@ -6,9 +6,10 @@
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $redirect_url = isset($_POST['redirect_url']) ? trim($_POST['redirect_url']) :'';
         $email = isset($_POST['email']) ? trim($_POST['email']) :'';
+        $applink = isset($_POST['applink']) ? $_POST['applink'] : '';
         $request = $authTools->requestPasswordReset($email);
         echo "<script>console.log(`Sent!`);</script>";
-        header("Location: ./signupSuccessful.php?redirect_url=" . $redirect_url . "&email=" . $email . "&resent_mail=true");
+        header("Location: ./signupSuccessful.php?redirect_url=" . $redirect_url . "&email=" . $email . "&resent_mail=true" . "&applink=" . $applink);
     }
 ?>
 
@@ -51,6 +52,7 @@
                 </div>
                 <input type="hidden" id="redirect-url" name="redirect_url" value="<?php echo $_GET['redirect_url'];?>">
                 <input type="hidden" id="email" name="email" value="<?php echo $_GET['email'];?>">
+                <input type="hidden" id="applink" name="applink" value="<?php echo $_GET['applink'];?>">
                 <div>
                     <a href="./login.php<?php echo "?" . $_SERVER['QUERY_STRING']; ?>"><button type="button" class="mb-3 primary-color-fsystems w-full text-white py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-50">
                     Go to login

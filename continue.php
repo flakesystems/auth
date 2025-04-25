@@ -81,10 +81,11 @@
     } else {
         if (!($_GET['disable_redirect'] == "true")) {
             if (!(isset($_COOKIE['auth_token'])) || !(isset ($_COOKIE['user_id']))) {
-                header("Location: https://auth.flake-systems.de/login.php?redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
+                //header("Location: https://auth.flake-systems.de/login.php?redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
+                header("Location: https://auth.flake-systems.de/login.php?disable_redirect=true&" . $_SERVER['QUERY_STRING']);
             } else {
                 if ($authTools->callUserDetailsApi($_COOKIE['user_id'], $_COOKIE['auth_token']) == ["error" => "Request failed"]) {
-                    header("Location: https://auth.flake-systems.de/login.php?disable_redirect=true&redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
+                    header("Location: https://auth.flake-systems.de/login.php?disable_redirect=true&" . $_SERVER['QUERY_STRING']);
                 }
             }
         }
@@ -126,11 +127,7 @@
                     </button>
                 </div>
                 <input type="hidden" id="redirect-url" name="redirect_url" value="<?php echo $_GET['redirect_url'];?>">
-                <? 
-                    if (isset($_GET['applink'])) {
-                        echo `<input type="hidden" id="applink" name="applink" value="` . $_GET['applink'] . `">`;
-                    }
-                ?>
+                <input type="hidden" id="applink" name="applink" value="<?php echo $_GET['applink'];?>">
             </form>
             <p class="text-center text-sm text-gray-500 mt-4 dark:text-gray-400">Not <? echo $GLOBALS['userName'] . "?"; ?> <a href="./login.php<?php echo "?" . $_SERVER['QUERY_STRING'] . "&disable_redirect=true"; ?>" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-500">Use another account</a></p>
             <a type="hidden" class="hidden text-center text-sm text-gray-500 mt-4 dark:text-gray-400" href="<?php echo $redirect_url_check; ?>">hello</a>

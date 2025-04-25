@@ -63,7 +63,7 @@
         if (curl_errno($ch)) {
             echo 'Error: ' . curl_error($ch);
         } else {
-            echo 'Response: ' . $response;
+            //echo 'Response: ' . $response;
         }
         
         // Close cURL session
@@ -83,7 +83,9 @@
             setcookie("auth_token", $token, time()+60*60*24*30, "/", "auth.flake-systems.de", true, true);
             setcookie("user_id", $userId, time()+60*60*24*30, "/", "auth.flake-systems.de", true, true);
 
-            registerApplink(applink: $applink, authToken: $token, userId: $userId);
+            if ($applink != '') {
+                registerApplink(applink: $applink, authToken: $token, userId: $userId);
+            }
 
             //Redirect to "redirect_url" with token and userId parameters
             header("Location: " . ($authTools->validateRedirectURL($redirect_url, $fallBackUrl) . "?set_cookie_with_auth_token=" . $token . "&set_cookie_with_user_id=" . $userId));
@@ -115,7 +117,7 @@
         //If disable_redirect isn't true, it will look for existing cookies on the client and redirect to the continue page if both token and userId is found.
         if (!($_GET['disable_redirect'] == "true")) {
             if ((isset($_COOKIE['auth_token'])) && (isset ($_COOKIE['user_id']))) {
-                header("Location: https://auth.flake-systems.de/continue.php?redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
+                header("Location: https://auth.flake-systems.de/continue.php?" . $_SERVER['QUERY_STRING']);
             }
         }
     }
@@ -166,11 +168,7 @@
                 </div>
 
                 <input type="hidden" id="redirect-url" name="redirect_url" value="<?php echo $_GET['redirect_url'];?>">
-                <? 
-                    if (isset($_GET['applink'])) {
-                        echo `<input type="hidden" id="applink" name="applink" value="` . $_GET['applink'] . `">`;
-                    }
-                ?>
+                <input type="hidden" id="applink" name="applink" value="<?php echo $_GET['applink'];?>">
                 <p class="text-center text-sm text-gray-500 mt-4 dark:text-gray-400">Forgot your password? <a href="./passwordReset.php<?php echo "?" . $_SERVER['QUERY_STRING']; ?>" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-500">Reset</a></p>
 
                 <div>

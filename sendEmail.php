@@ -6,11 +6,12 @@
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $redirect_url = isset($_POST['redirect_url']) ? trim($_POST['redirect_url']) :'';
         $email = isset($_POST['email']) ? trim($_POST['email']) :'';
+        $applink = isset($_POST['applink']) ? trim($_POST['applink']) :'';
         $request = $authTools->requestVerification($email);
-        header("Location: ./signupSuccessful.php?redirect_url=" . $redirect_url . "&email=" . $email);
+        header("Location: ./signupSuccessful.php?redirect_url=" . $redirect_url . "&email=" . $email . "&applink=" . $applink);
     } else {
         if (!(isset($_GET['email']))) {
-            header('Location: ./login.php');
+            header("Location: https://auth.flake-systems.de/login.php?" . $_SERVER['QUERY_STRING']);
         }
     }
 ?>
@@ -50,6 +51,7 @@
                 </div>
                 <input type="hidden" id="redirect-url" name="redirect_url" value="<?php echo $_GET['redirect_url'];?>">
                 <input type="hidden" id="email" name="email" value="<?php echo $_GET['email'];?>">
+                <input type="hidden" id="applink" name="applink" value="<?php echo $_GET['applink'];?>">
             </form>
         </div>
     </body>

@@ -60,28 +60,29 @@
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm-password'];
         $redirect_url = isset($_POST['redirect_url']) ? $_POST['redirect_url'] : '';
+        $applink = isset($_POST['applink']) ? $_POST['applink'] : '';
         $terms = isset($_POST['terms']) ? true : false;
     
         if ($password !== $confirm_password) {
             $error_message = "Passwords do not match!";
-            header("Location: " . modify_current_url(['redirect_url' => $redirect_url]));
+            header("Location: " . modify_current_url(['redirect_url' => $redirect_url, 'applink' => $applink]));
         } elseif (!$terms) {
             $error_message = "You must agree to the Terms and Conditions!";
-            header("Location: " . modify_current_url(['redirect_url' => $redirect_url]));
+            header("Location: " . modify_current_url(['redirect_url' => $redirect_url, 'applink' => $applink]));
         } else {
             $response = signUpUser($email, $password, $confirm_password, $name);
     
             if ($response && isset($response['id'])) {
                 $success_message = "Account created successfully! Please log in.";
-                header("Location: https://auth.flake-systems.de/sendEmail.php?redirect_url=$redirect_url&email=$email");
+                header("Location: https://auth.flake-systems.de/sendEmail.php?redirect_url=$redirect_url&email=$email&applink=$applink");
             } else {
                 $error_message = "Error creating user: " . ($response['message'] ?? 'Unknown error');
-                header("Location: " . modify_current_url(['redirect_url' => $redirect_url]));
+                header("Location: " . modify_current_url(['redirect_url' => $redirect_url, 'applink' => $applink]));
             }
         }
     } else {
         //If disable_redirect isn't true, it will look for existing cookies on the client and redirect to the continue page if both token and userId is found.
-        if (!($_GET['disable_redirect'] == "true")) {
+        if ($_GET['disable_redirect'] != "true") {
             if ((isset($_COOKIE['auth_token'])) && (isset ($_COOKIE['user_id']))) {
                 header("Location: https://auth.flake-systems.de/continue.php?redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
             }
@@ -161,6 +162,7 @@
                 <?php endif; ?>
 
                 <input type="hidden" id="redirect-url" name="redirect_url" value="<?php echo $_GET['redirect_url'];?>">
+                <input type="hidden" id="applink" name="applink" value="<?php echo $_GET['applink'];?>">
 
                 <!-- Submit Button -->
                 <div>
