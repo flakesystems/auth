@@ -147,7 +147,7 @@
             return $newUrl;
         }
 
-        private function callUserDetailsApi($userId, $token): array {
+        public function callUserDetailsApi($userId, $token): array {
             echo "<script>console.log(Calling Api with userId: $userId, token: $token);</script>";
             $url = "https://backend.flake-systems.de/api/collections/users/records/" . $userId;
         
@@ -166,7 +166,7 @@
         
             if ($httpCode !== 200) {
                 echo "<script>console.log(Failed with code: $httpCode);</script>";
-                return ["error" => "Request failed with status code " . $httpCode];
+                return ["error" => "Request failed"];
             }
         
             $jsonDecode = json_decode($response, true) ?? ["error" => "Invalid JSON response"];

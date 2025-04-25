@@ -35,7 +35,42 @@
         return $data;
     }
 
-    function login($mail, $password, $redirect_url, $authTools, $fallBackUrl) {
+    function registerApplink($applink, $authToken, $userId) {
+        // API endpoint with path variables
+        $url = "https://backend.flake-systems.de/api/collections/appLink/records/{$applink}";
+        
+        // Body variables (data to update)
+        $data = [
+            'user' => $userId,
+            'userToken' => $authToken
+        ];
+        
+        // Initialize cURL session
+        $ch = curl_init($url);
+        
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PATCH");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/x-www-form-urlencoded'
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        
+        // Execute the request
+        $response = curl_exec($ch);
+        
+        // Error handling
+        if (curl_errno($ch)) {
+            echo 'Error: ' . curl_error($ch);
+        } else {
+            echo 'Response: ' . $response;
+        }
+        
+        // Close cURL session
+        curl_close($ch);
+    }
+
+    function login($mail, $password, $redirect_url, $authTools, $fallBackUrl, $applink) {
         //Get data from ApiCall
         $data = authWithPassword($mail, $password);
         //If "token" is in the response from the API it will redirect to the "redirect_url" with set_cookie_with_auth_token and set_cookie_with_user_id parameters.
@@ -47,6 +82,8 @@
             //Set cookies
             setcookie("auth_token", $token, time()+60*60*24*30, "/", "auth.flake-systems.de", true, true);
             setcookie("user_id", $userId, time()+60*60*24*30, "/", "auth.flake-systems.de", true, true);
+
+            registerApplink(applink: $applink, authToken: $token, userId: $userId);
 
             //Redirect to "redirect_url" with token and userId parameters
             header("Location: " . ($authTools->validateRedirectURL($redirect_url, $fallBackUrl) . "?set_cookie_with_auth_token=" . $token . "&set_cookie_with_user_id=" . $userId));
@@ -65,13 +102,14 @@
         $mail = isset($_POST['email']) ? trim($_POST['email']) : '';
         $password = isset($_POST['password']) ? trim($_POST['password']) :'';
         $redirect_url = isset($_POST['redirect_url']) ? trim($_POST['redirect_url']) :'';
+        $applink = isset($_POST['applink']) ? trim($_POST['applink']) :'';
 
         //If one of the variables is an empty string, the user will be confronted with an error.
         if (empty($mail) || empty($password) || empty($redirect_url)) {
             $GLOBALS['login_error'] = "Failed to login. Please enter your email and password.";
         } else {
             //Login
-            login($mail, $password, $redirect_url, $authTools, $fallBackUrl);
+            login(mail: $mail, password: $password, redirect_url: $redirect_url, authTools: $authTools, fallBackUrl: $fallBackUrl, applink: $applink);
         }
     } else {
         //If disable_redirect isn't true, it will look for existing cookies on the client and redirect to the continue page if both token and userId is found.
@@ -128,6 +166,11 @@
                 </div>
 
                 <input type="hidden" id="redirect-url" name="redirect_url" value="<?php echo $_GET['redirect_url'];?>">
+                <? 
+                    if (isset($_GET['applink'])) {
+                        echo `<input type="hidden" id="applink" name="applink" value="` . $_GET['applink'] . `">`;
+                    }
+                ?>
                 <p class="text-center text-sm text-gray-500 mt-4 dark:text-gray-400">Forgot your password? <a href="./passwordReset.php<?php echo "?" . $_SERVER['QUERY_STRING']; ?>" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-500">Reset</a></p>
 
                 <div>

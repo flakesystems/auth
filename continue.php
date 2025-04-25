@@ -33,14 +33,59 @@
         header('Location: '. $newRedirect_url);
     }
 
+    function registerApplink($applink, $authToken, $userId) {
+        // API endpoint with path variables
+        $url = "https://backend.flake-systems.de/api/collections/appLink/records/{$applink}";
+        
+        // Body variables (data to update)
+        $data = [
+            'user' => $userId,
+            'userToken' => $authToken
+        ];
+        
+        // Initialize cURL session
+        $ch = curl_init($url);
+        
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PATCH");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/x-www-form-urlencoded'
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        
+        // Execute the request
+        $response = curl_exec($ch);
+        
+        // Error handling
+        if (curl_errno($ch)) {
+            echo 'Error: ' . curl_error($ch);
+        } else {
+            echo 'Response: ' . $response;
+        }
+        
+        // Close cURL session
+        curl_close($ch);
+    }
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $redirect_url = isset($_POST['redirect_url']) ? trim($_POST['redirect_url']) :'';
+        $applink = isset($_POST['applink']) ? trim($_POST['applink']) :'';
 
-        login($GLOBALS['authTools'], $redirect_url, $GLOBALS['fallBackurl']);
+        if ($redirect_url != '') {
+            login($GLOBALS['authTools'], $redirect_url, $GLOBALS['fallBackurl']);
+        }
+        if ($applink != '') {
+            registerApplink($_GET['applink'], $_COOKIE['auth_token'], $_COOKIE['user_id']);
+        }
     } else {
         if (!($_GET['disable_redirect'] == "true")) {
             if (!(isset($_COOKIE['auth_token'])) || !(isset ($_COOKIE['user_id']))) {
                 header("Location: https://auth.flake-systems.de/login.php?redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
+            } else {
+                if ($authTools->callUserDetailsApi($_COOKIE['user_id'], $_COOKIE['auth_token']) == ["error" => "Request failed"]) {
+                    header("Location: https://auth.flake-systems.de/login.php?redirect_url=" . ($authTools->validateRedirectURL($_GET['redirect_url'], $fallBackUrl)));
+                }
             }
         }
     }
@@ -81,6 +126,11 @@
                     </button>
                 </div>
                 <input type="hidden" id="redirect-url" name="redirect_url" value="<?php echo $_GET['redirect_url'];?>">
+                <? 
+                    if (isset($_GET['applink'])) {
+                        echo `<input type="hidden" id="applink" name="applink" value="` . $_GET['applink'] . `">`;
+                    }
+                ?>
             </form>
             <p class="text-center text-sm text-gray-500 mt-4 dark:text-gray-400">Not <? echo $GLOBALS['userName'] . "?"; ?> <a href="./login.php<?php echo "?" . $_SERVER['QUERY_STRING'] . "&disable_redirect=true"; ?>" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-500">Use another account</a></p>
             <a type="hidden" class="hidden text-center text-sm text-gray-500 mt-4 dark:text-gray-400" href="<?php echo $redirect_url_check; ?>">hello</a>
